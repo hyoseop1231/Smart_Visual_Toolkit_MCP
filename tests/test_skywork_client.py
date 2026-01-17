@@ -68,7 +68,7 @@ class TestSkyworkConfig:
 
         assert config.base_url == "https://api.skywork.ai/open/sse"
         assert config.endpoint_timeout == 10.0
-        assert config.request_timeout == 300.0
+        assert config.request_timeout == 600.0  # gen_ppt는 5분+ 소요
         assert config.max_retries == 3
         assert config.retry_delay == 1.0
 

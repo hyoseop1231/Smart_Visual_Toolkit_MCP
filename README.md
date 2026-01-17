@@ -1,118 +1,222 @@
-# Smart Visual Toolkit (MCP Server)
+# 나노바나나 문서 생성 MCP 서버
 
-Obsidian Smart Composer와 연동하여 **나노바나나(Nano Banana) 스타일의 AI 이미지 생성**을 제공하고, **Skywork MCP Server**와의 연동을 도와주는 툴킷입니다.
+Claude 및 기타 MCP 클라이언트를 위한 **문서 생성 + 이미지 생성 통합 도구 서버**입니다.
 
-## 🌟 주요 기능
+## 주요 기능
 
-1.  **AI 이미지 생성 (`generate_image`)**
-    *   **나노바나나 스타일 적용**: 15종 이상의 바나나 X 스타일 패턴(Corporate Memphis, Clay 3D, Pixel Art 등)을 자동으로 프롬프트에 적용합니다.
-    *   **Obsidian 연동**: 노트 내용을 기반으로 LLM이 적절한 스타일을 추천하여 이미지를 생성합니다.
-    *   **API**: **Google Gemini (Imagen)** 모델을 사용하여 고품질 이미지를 생성합니다.
+### 문서 생성 (Skywork API)
 
-2.  **스타일 탐색 (`list_styles`)**
-    *   사용 가능한 모든 시각적 스타일과 키워드를 조회합니다.
+| 도구 | 설명 | 예시 |
+|------|------|------|
+| `gen_doc` | Word 문서 생성 | "회의록 템플릿 만들어줘" |
+| `gen_excel` | Excel 스프레드시트 생성 | "월별 매출 데이터 표 만들어줘" |
+| `gen_ppt` | PowerPoint 생성 (고품질) | "AI 기술 소개 10페이지" |
+| `gen_ppt_fast` | PowerPoint 생성 (빠른) | "회사 소개 5장" |
 
-3.  **Skywork 설정 도우미 (`get_skywork_config`)**
-    *   PPT, Word, Excel 생성을 위한 **Skywork MCP Server**의 인증 URL을 자동으로 생성해줍니다.
-    *   복잡한 MD5 서명 계산 과정을 대신 처리하여, Obsidian 설정에 바로 붙여넣을 수 있는 JSON 설정을 제공합니다.
+### 이미지 생성 (Google Imagen)
 
-## 📂 프로젝트 구조
+| 도구 | 설명 | 예시 |
+|------|------|------|
+| `generate_image` | 스타일 기반 이미지 생성 | "산 풍경", 스타일: "Watercolor Dreams" |
+| `list_styles` | 사용 가능한 스타일 목록 | 15종 이상의 나노바나나 스타일 |
 
-```text
-smart-visual-toolkit/
-├── src/
-│   ├── generators/
-│   │   └── image_gen.py    # 이미지 생성 로직 (스타일 합성 및 API 호출)
-│   ├── resources/
-│   │   └── banana_styles.json  # 나노바나나 스타일 템플릿 DB
-│   └── main.py             # MCP 서버 엔트리포인트 (Tools 정의)
-├── pyproject.toml          # 프로젝트 설정 및 의존성
-└── README.md               # 문서
-```
+### 설정 도구
 
-## 🚀 설치 및 실행 방법
+| 도구 | 설명 |
+|------|------|
+| `get_skywork_config` | Skywork SSE URL 자동 생성 |
 
-### 1. 환경 설정
+## 설치
 
-Python 3.10 이상이 필요합니다.
+### 요구사항
+
+- Python 3.10+
+- uv (권장) 또는 pip
+
+### 설치 방법
 
 ```bash
-# 가상환경 생성 및 활성화 (선택)
-python -m venv .venv
-source .venv/bin/activate  # Mac/Linux
-# .venv\Scripts\activate   # Windows
+# uv 사용 (권장)
+uv sync
 
-# 의존성 설치
+# 또는 pip 사용
 pip install -e .
 ```
 
-### 2. API 키 설정
+### API 키 설정
 
-프로젝트 루트에 `.env` 파일을 생성하고 다음 내용을 추가하세요. (이미지 생성을 위해 필요)
+프로젝트 루트에 `.env` 파일 생성:
 
 ```ini
-# Google Gemini API Key (Imagen 사용)
+# Google Gemini API Key (이미지 생성용)
+# https://aistudio.google.com/app/apikey 에서 발급
 GOOGLE_API_KEY=your_google_api_key_here
 
-# Option: Pre-configure Skywork Credentials (for easy config generation)
-SKYWORK_SECRET_ID=your_skywork_secret_id
-SKYWORK_SECRET_KEY=your_skywork_secret_key
+# Skywork API Credentials (문서 생성용)
+# https://skywork.ai/ 에서 발급
+SKYWORK_SECRET_ID=your_secret_id
+SKYWORK_SECRET_KEY=your_secret_key
 ```
 
-### 3. 서버 실행
+## 실행
 
 ```bash
+# MCP 서버 실행
 uv run src/main.py
 ```
 
-## 🔗 External Tools Integration
+## MCP 클라이언트 설정
 
-### Skywork MCP (Office Tools)
-Provides professional document generation capabilities.
+### Claude Desktop
 
-**Available Tools:**
-*   `gen_doc`: Create and edit Word documents.
-*   `gen_excel`: Data analysis and Excel sheet creation.
-*   `gen_ppt`: Standard PowerPoint generation.
-*   `gen_ppt_fast`: Fast PowerPoint generation.
+`~/Library/Application Support/Claude/claude_desktop_config.json`:
 
-#### Configuration
-
-**Step 1: Get Credentials**
-1.  Sign up at [Skywork AI Open Platform](https://skywork.ai/).
-2.  Get your `SecretID` and `SecretKey`.
-
-**Step 2: Generate Config**
-Use this MCP server to generate your signed URL:
-> "내 SecretID는 `foo`, Key는 `bar`야. Skywork 설정 좀 만들어줘."
-
-**Step 3-A: Obsidian Smart Composer**
-Add the generated JSON to your `mcpServers` config:
 ```json
 {
   "mcpServers": {
-    "skywork-office-tool": {
-      "url": "https://api.skywork.ai/open/sse?secret_id=...&sign=..."
+    "nanobanana": {
+      "command": "uv",
+      "args": ["run", "src/main.py"],
+      "cwd": "/path/to/Smart_Visual_Toolkit_MCP"
     }
   }
 }
 ```
 
-**Step 3-B: Cursor IDE**
-1.  Go to **Settings** > **Models** > **MCP**.
-2.  Click **Add New MCP Server**.
-3.  Name: `Skywork-Office-Tool`
-4.  Type: `SSE`
-5.  URL: (Paste the signed URL generated in Step 2)
+### Cursor IDE
 
-## 🎨 사용 예시 (Obsidian 채팅)
+1. **Settings** → **Models** → **MCP**
+2. **Add New MCP Server**
+3. 설정:
+   - Name: `nanobanana`
+   - Type: `stdio`
+   - Command: `uv run src/main.py`
 
-*   **이미지 생성**: "이 노트의 내용을 요약해서 'Clay 3D' 스타일로 귀여운 이미지를 하나 만들어줘."
-*   **PPT 생성**: "이 노트를 바탕으로 발표 자료를 만들어줘. (Skywork가 자동으로 처리)"
-*   **스타일 조회**: "사용 가능한 이미지 스타일 목록 보여줘."
+### Obsidian Smart Composer
 
-## 🛠️ 개발 정보
+```json
+{
+  "mcpServers": {
+    "nanobanana": {
+      "command": "uv",
+      "args": ["run", "src/main.py"],
+      "cwd": "/path/to/Smart_Visual_Toolkit_MCP"
+    }
+  }
+}
+```
 
-*   **언어**: Python 3.10+
-*   **프레임워크**: Model Context Protocol (MCP) SDK
-*   **라이브러리**: `requests`, `python-dotenv`
+## 사용 예시
+
+### 문서 생성
+
+```
+"회의록 양식 Word 문서 만들어줘"
+→ gen_doc 호출 → .docx 다운로드 URL 반환
+
+"2024년 월별 매출 데이터 Excel 만들어줘"
+→ gen_excel 호출 → .xlsx 다운로드 URL 반환
+
+"인공지능 기초 교육 자료 PPT 10페이지"
+→ gen_ppt 호출 → .pptx 다운로드 URL 반환 (5-10분 소요)
+
+"회사 소개 PPT 빠르게 만들어줘"
+→ gen_ppt_fast 호출 → .pptx 다운로드 URL 반환 (1-2분)
+```
+
+### 이미지 생성
+
+```
+"산 풍경 이미지 만들어줘"
+→ generate_image 호출 → 이미지 생성
+
+"Clay 3D 스타일로 귀여운 캐릭터 그려줘"
+→ generate_image(style_name="Clay 3D") 호출
+
+"사용 가능한 스타일 보여줘"
+→ list_styles 호출 → 15종 스타일 목록
+```
+
+## 프로젝트 구조
+
+```
+smart-visual-toolkit/
+├── src/
+│   ├── main.py                 # MCP 서버 진입점 + 도구 정의
+│   ├── generators/
+│   │   ├── image_gen.py        # Google Imagen 통합 + 캐시
+│   │   └── cache.py            # LRU + TTL 캐시
+│   ├── skywork/
+│   │   └── client.py           # Skywork SSE/JSON-RPC 클라이언트
+│   └── resources/
+│       └── banana_styles.json  # 나노바나나 스타일 정의
+├── tests/                      # 단위 테스트 (59개)
+├── .env                        # 환경 변수 (API 키)
+├── pyproject.toml              # 프로젝트 설정
+└── README.md
+```
+
+## 아키텍처
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    MCP Client (Claude)                   │
+└─────────────────────────┬───────────────────────────────┘
+                          │ MCP Protocol (stdio)
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│              나노바나나 문서 생성 MCP 서버               │
+│  ┌─────────────────────────────────────────────────────┐│
+│  │                    FastMCP Layer                    ││
+│  │  list_styles / generate_image / get_skywork_config  ││
+│  │  gen_doc / gen_excel / gen_ppt / gen_ppt_fast       ││
+│  └─────────────────────────────────────────────────────┘│
+│  ┌───────────────────────┬──────────────────────────┐   │
+│  │     ImageGenerator    │     SkyworkClient        │   │
+│  │     + Cache (LRU)     │   (SSE + JSON-RPC)       │   │
+│  └───────────┬───────────┴───────────┬──────────────┘   │
+└──────────────┼───────────────────────┼──────────────────┘
+               │                       │
+               ▼                       ▼
+      ┌────────────────┐      ┌────────────────────┐
+      │ Google Imagen  │      │   Skywork API      │
+      │     API        │      │   (SSE Endpoint)   │
+      └────────────────┘      └────────────────────┘
+```
+
+## 개발
+
+### 테스트 실행
+
+```bash
+# 전체 테스트
+uv run pytest tests/ -v
+
+# 커버리지 포함
+uv run pytest tests/ --cov=src --cov-report=term-missing
+```
+
+### 현재 테스트 상태
+
+- 총 59개 테스트
+- 100% 통과
+- 커버리지: 73% (main.py 제외 시 89%)
+
+## 기술 스택
+
+- **언어**: Python 3.10+
+- **MCP 프레임워크**: FastMCP (mcp>=0.1.0)
+- **HTTP 클라이언트**: httpx (비동기)
+- **이미지 생성**: Google Generative AI (Imagen 4.0)
+- **문서 생성**: Skywork API (SSE + JSON-RPC 2.0)
+
+## 라이선스
+
+MIT License
+
+## 관련 SPEC
+
+- SPEC-NANOBANANA-001: 나노바나나 문서 생성 MCP 서버
+- SPEC-SKYWORK-001: Skywork API 품질 개선
+- SPEC-CACHE-001: 이미지 캐시 시스템
+- SPEC-IMG-001: 배치 이미지 생성 시스템
