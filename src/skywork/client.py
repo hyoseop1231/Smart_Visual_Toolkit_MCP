@@ -204,8 +204,16 @@ class SkyworkClient:
                             if "jsonrpc" in data:
                                 try:
                                     msg = json.loads(data)
+                                    # ping 등 서버 요청은 무시 (method 키가 있으면 요청/알림)
+                                    if "method" in msg:
+                                        logger.debug(
+                                            f"Ignoring server notification: {msg.get('method')}"
+                                        )
+                                        continue
+                                    # result 또는 error가 있는 응답만 처리
                                     if "id" in msg and msg["id"] in self._futures:
-                                        self._futures[msg["id"]].set_result(msg)
+                                        if "result" in msg or "error" in msg:
+                                            self._futures[msg["id"]].set_result(msg)
                                 except json.JSONDecodeError as e:
                                     logger.debug(f"JSON parsing failed for line: {e}")
             except httpx.HTTPError as e:
