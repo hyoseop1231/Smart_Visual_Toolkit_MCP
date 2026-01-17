@@ -1,0 +1,80 @@
+{
+  "styles": [
+    {
+      "name": "Corporate Memphis",
+      "keywords": "Corporate Memphis, 3D Render, Confetti",
+      "description": "Modern tech company style, clean and friendly"
+    },
+    {
+      "name": "Flat Corporate",
+      "keywords": "Flat illustration, Corporate, Memphis",
+      "description": "Professional, flat design suitable for business presentations"
+    },
+    {
+      "name": "Isometric Infographic",
+      "keywords": "Infographic, Isometric, Colorful",
+      "description": "3D-like technical illustrations, good for data visualization"
+    },
+    {
+      "name": "Minimal Line Art",
+      "keywords": "Minimal, Monochrome, Line Art",
+      "description": "Simple, elegant black and white drawings"
+    },
+    {
+      "name": "Doodle Notebook",
+      "keywords": "Doodle, Notebook, Blue Ink",
+      "description": "Hand-drawn style, casual and creative"
+    },
+    {
+      "name": "Clay 3D",
+      "keywords": "Clay, Stopmotion, Cute",
+      "description": "Playful 3D clay modeling style"
+    },
+    {
+      "name": "Watercolor Map",
+      "keywords": "Watercolor, Map, Fantasy",
+      "description": "Artistic watercolor painting style"
+    },
+    {
+      "name": "Pixel Art",
+      "keywords": "Pixel Art, Retro Game, 8-bit",
+      "description": "Retro gaming aesthetic"
+    },
+    {
+      "name": "Glassmorphism",
+      "keywords": "Glassmorphism, Dark, Blur",
+      "description": "Modern UI trend, translucent and sleek"
+    },
+    {
+      "name": "Cyberpunk",
+      "keywords": "Cyberpunk, Blue, Circuit",
+      "description": "Futuristic, high-tech, neon aesthetic"
+    },
+    {
+      "name": "Synthwave",
+      "keywords": "Synthwave, Sunset, Retro Grid",
+      "description": "80s retro-futuristic style"
+    },
+    {
+      "name": "Paper Cutout",
+      "keywords": "Paper Cutout, Layered, Shadow",
+      "description": "Crafty feel with depth and layers"
+    },
+    {
+      "name": "Ukiyo-e Pop",
+      "keywords": "Ukiyo-e, City Pop, Halftone",
+      "description": "Japanese retro pop art style"
+    },
+    {
+      "name": "Low Poly",
+      "keywords": "Low Poly, 3D, Geometric",
+      "description": "Abstract 3D geometric shapes"
+    },
+    {
+      "name": "Abstract Fluid",
+      "keywords": "Abstract, Fluid, Gradient",
+      "description": "Colorful flowing liquids and gradients"
+    }
+  ],
+  "default_style": "Flat Corporate"
+}
