@@ -25,6 +25,11 @@ except ImportError:
     # If run as script from src/ dir
     from generators.image_gen import get_image_generator  # type: ignore[no-redef]
 
+try:
+    from src.gallery.image_gallery import ImageGallery
+except ImportError:
+    from gallery.image_gallery import ImageGallery  # type: ignore[no-redef]
+
 # Load environment variables
 load_dotenv()
 
@@ -33,6 +38,15 @@ mcp = FastMCP("Smart Visual Toolkit")
 
 # Initialize Generators
 image_gen = get_image_generator()
+
+# Initialize Gallery (SPEC-GALLERY-001)
+output_dir = Path("output/images")
+metadata_path = Path("output/metadata.json")
+gallery = ImageGallery(
+    images_dir=output_dir,
+    metadata_path=metadata_path,
+    enable_thumbnails=os.getenv("ENABLE_THUMBNAILS", "false").lower() == "true",
+)
 
 # Load styles for internal use
 STYLES_PATH = Path(__file__).parent / "resources" / "banana_styles.json"
@@ -308,6 +322,199 @@ async def gen_ppt_fast(query: str, use_network: str = "true") -> str:
     - use_network: "true" or "false" (string).
     """
     return await _call_skywork_tool("gen_ppt_fast", query, use_network)
+
+
+# --- Gallery Tools (SPEC-GALLERY-001) ---
+
+
+@mcp.tool()
+def list_images(
+    limit: int = 50,
+    offset: int = 0,
+    sort_by: str = "created_at",
+    sort_order: str = "desc",
+) -> str:
+    """
+    [SPEC-GALLERY-001] Lists generated images with pagination and sorting.
+
+    Args:
+        limit: Maximum number of images to return (default: 50)
+        offset: Number of images to skip for pagination (default: 0)
+        sort_by: Sort field - created_at, size, style, filename (default: created_at)
+        sort_order: Sort order - asc or desc (default: desc)
+
+    Returns:
+        Formatted list of images with metadata
+    """
+    images = gallery.list_images(
+        limit=limit, offset=offset, sort_by=sort_by, sort_order=sort_order
+    )
+
+    if not images:
+        return "No images found. Generate some images first!"
+
+    result = [f"Found {len(images)} image(s):", ""]
+
+    for img in images:
+        result.append(f"ID: {img.id}")
+        result.append(f"  File: {img.filename}")
+        result.append(f"  Style: {img.style}")
+        result.append(f"  Created: {img.created_at}")
+        result.append(f"  Resolution: {img.resolution}")
+        result.append(f"  Format: {img.format}")
+        result.append(f"  Size: {img.get_file_size_mb():.2f} MB")
+        result.append(f"  Prompt: {img.prompt[:80]}...")
+        result.append("")
+
+    return "\n".join(result)
+
+
+@mcp.tool()
+def search_images(
+    style: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    keyword: Optional[str] = None,
+    format: Optional[str] = None,
+) -> str:
+    """
+    [SPEC-GALLERY-001] Searches images by various criteria.
+
+    Args:
+        style: Filter by style name (optional)
+        date_from: Start date in ISO format (optional)
+        date_to: End date in ISO format (optional)
+        keyword: Search in prompt text (optional)
+        format: Image format - png, jpeg, webp (optional)
+
+    Returns:
+        Formatted list of matching images
+    """
+    filters = {}
+    if style:
+        filters["style"] = style
+    if date_from:
+        filters["date_from"] = date_from
+    if date_to:
+        filters["date_to"] = date_to
+    if keyword:
+        filters["keyword"] = keyword
+    if format:
+        filters["format"] = format
+
+    images = gallery.search_images(filters)
+
+    if not images:
+        return "No matching images found."
+
+    result = [f"Found {len(images)} matching image(s):", ""]
+
+    for img in images:
+        result.append(f"ID: {img.id}")
+        result.append(f"  Style: {img.style}, Format: {img.format}")
+        result.append(f"  Created: {img.created_at}")
+        result.append(f"  Prompt: {img.prompt[:80]}...")
+        result.append("")
+
+    return "\n".join(result)
+
+
+@mcp.tool()
+def get_image_details(image_id: str) -> str:
+    """
+    [SPEC-GALLERY-001] Gets detailed metadata for a specific image.
+
+    Args:
+        image_id: Unique image identifier
+
+    Returns:
+        Detailed image metadata or error message
+    """
+    metadata = gallery.get_image_details(image_id)
+
+    if not metadata:
+        return f"Error: Image '{image_id}' not found."
+
+    result = [
+        f"Image Details: {metadata.id}",
+        f"  Filename: {metadata.filename}",
+        f"  Path: {metadata.filepath}",
+        f"  Created: {metadata.created_at}",
+        f"  Style: {metadata.style}",
+        f"  Aspect Ratio: {metadata.aspect_ratio}",
+        f"  Resolution: {metadata.resolution}",
+        f"  Format: {metadata.format}",
+        f"  Size: {metadata.get_file_size_mb():.2f} MB ({metadata.size_bytes} bytes)",
+        f"  Prompt: {metadata.prompt}",
+    ]
+
+    if metadata.thumbnail_path:
+        result.append(f"  Thumbnail: {metadata.thumbnail_path}")
+
+    if metadata.generation_params:
+        result.append(f"  Generation Params: {metadata.generation_params}")
+
+    return "\n".join(result)
+
+
+@mcp.tool()
+def delete_image(image_id: str, confirm: bool = False) -> str:
+    """
+    [SPEC-GALLERY-001] Deletes an image (requires confirm=True).
+
+    Args:
+        image_id: Unique image identifier
+        confirm: Must be True to actually delete (safety measure)
+
+    Returns:
+        Deletion result message
+    """
+    result = gallery.delete_image(image_id, confirm=confirm)
+
+    if result["success"]:
+        return f"✓ {result['message']}"
+    else:
+        return f"✗ {result['message']}"
+
+
+@mcp.tool()
+def cleanup_old_images(days: int = 30, dry_run: bool = True) -> str:
+    """
+    [SPEC-GALLERY-001] Cleans up images older than specified days.
+
+    Args:
+        days: Age threshold in days (default: 30)
+        dry_run: If True, only show what would be deleted (default: True)
+
+    Returns:
+        Cleanup result summary
+    """
+    result = gallery.cleanup_old_images(days=days, dry_run=dry_run)
+
+    if dry_run:
+        if result["would_delete_count"] > 0:
+            freed_mb = result["freed_space_bytes"] / (1024 * 1024)
+            output = [
+                f"Dry run: Would delete {result['would_delete_count']} old image(s)",
+                f"  Would free: {freed_mb:.2f} MB",
+                f"  Age threshold: {days} days",
+                "",
+                "Images to be deleted:",
+            ]
+            for img_id in result["would_delete_images"]:
+                output.append(f"  - {img_id}")
+            return "\n".join(output)
+        else:
+            return f"No images older than {days} days found."
+    else:
+        if result["deleted_count"] > 0:
+            freed_mb = result["freed_space_bytes"] / (1024 * 1024)
+            return (
+                f"✓ Cleaned up {result['deleted_count']} old image(s)\n"
+                f"  Freed: {freed_mb:.2f} MB"
+            )
+        else:
+            return f"No images older than {days} days found."
 
 
 if __name__ == "__main__":
