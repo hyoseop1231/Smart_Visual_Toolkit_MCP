@@ -1,5 +1,3 @@
-# Smart Visual Toolkit (MCP Server)
-
 > **Version 0.1.0** | AI 이미지 생성 및 문서 자동화를 위한 MCP 서버
 
 Obsidian Smart Composer와 연동하여 **나노바나나(Nano Banana) 스타일의 AI 이미지 생성**을 제공하고, **Skywork MCP Server**를 통한 문서 생성 기능을 통합한 올인원 툴킷입니다.
@@ -71,9 +69,14 @@ Smart_Visual_Toolkit_MCP/
 
 ## 설치 및 실행 방법
 
-### 1. 환경 설정
+## 설치
 
-Python 3.10 이상이 필요합니다.
+### 요구사항
+
+- Python 3.10+
+- uv (권장) 또는 pip
+
+### 설치 방법
 
 ```bash
 # 저장소 클론
@@ -87,7 +90,7 @@ uv sync
 pip install -e .
 ```
 
-### 2. API 키 설정
+### API 키 설정
 
 프로젝트 루트에 `.env` 파일을 생성하고 다음 내용을 추가하세요.
 
@@ -100,9 +103,10 @@ SKYWORK_SECRET_ID=your_skywork_secret_id
 SKYWORK_SECRET_KEY=your_skywork_secret_key
 ```
 
-### 3. 서버 실행
+## 실행
 
 ```bash
+# MCP 서버 실행
 uv run src/main.py
 ```
 
