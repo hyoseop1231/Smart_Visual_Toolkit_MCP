@@ -32,7 +32,7 @@ class SkyworkConfig:
     secret_key: str
     base_url: str = "https://api.skywork.ai/open/sse"
     endpoint_timeout: float = 10.0
-    request_timeout: float = 300.0
+    request_timeout: float = 600.0  # 10분 (gen_ppt는 5분+ 소요)
     max_retries: int = 3
     retry_delay: float = 1.0
 

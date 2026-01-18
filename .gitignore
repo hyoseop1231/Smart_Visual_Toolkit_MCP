@@ -9,3 +9,130 @@ output/
 *.pptx
 *.docx
 *.pdf
+
+venv/
+.VolumeIcon.icns
+# Skill-specific credentials
+*_secret=*
+*.pem
+# ===========================================
+.aws/config
+# Secrets and Credentials (CRITICAL)
+.claude/skills/*/*/*token*
+# Version: 0.33.0
+*.sln
+*.sqlite
+*-secret.*
+*.swp
+# Logs & Temporary Files
+# Updated: 2026-01-10
+.vercel/
+.firebase/
+.vscode/
+# Certificate files
+.next/
+.cursor/
+*.key.*
+*.pyd
+*.njsproj
+*.secret.*
+.Trashes
+secret-key-*
+# Windows
+# Build Artifacts & Distribution
+*-api-key.*
+ehthumbs.db
+.claude/settings.local.*.json
+# Deployment & CI/CD
+*-key.*
+# ============================================
+private-key*
+.#*
+.claude/.env.local*
+*.bak
+.idea/
+*.pyo
+*.sublime-workspace
+.tscache/
+# Virtual Environments
+!.env.example
+.netlify/
+[Dd]esktop.ini
+# Credential patterns in environment files
+.LSOverride
+*.db
+coverage.json
+Thumbs.db
+# Cloud provider credentials
+*.temp
+# Python Cache & Bytecode
+.turbo/
+*.p12
+*.log
+.claude/local/
+logs/
+# Linux
+*~
+.coverage
+*.sqlite3
+.directory
+*_secret.*
+api-key-*
+*.jks
+*_backup_*/
+# MoAI-ADK Package Distribution .gitignore
+.DS_Store
+.AppleDouble
+*_key.*
+.claude/skills/*/secrets/
+# IDE & Editors
+env/
+*.swo
+# OS Files
+.aws/credentials
+.claude/skills/*/*/*key*
+.fseventsd
+# Backups
+*.rdb
+secret-*.*
+.nuxt/
+dist-ssr/
+*.pfx
+*.egg
+.moai-backups/
+.claude/skills/*/*/*secret*
+out/
+# Mac
+node_modules/
+.uv-cache/
+htmlcov/
+.claude/skills/*/.env*
+# Purpose: Essential patterns for user projects
+*.tsbuildinfo
+# Node.js (for docs/Nextra)
+.claude/settings.local.json
+*.suo
+*-backup/
+.uv_cache/
+*.sublime-project
+*-secret-key.*
+# Claude Code Configuration
+# Environment files
+.env/
+# FIXED: Issue #237 - Replaced overly broad *key* and *secret* patterns
+.env.*
+.pytest_cache/
+.mypy_cache/
+*.dbm
+# Test Coverage
+.DocumentRevisions-V100
+*.sw?
+*_token=*
+*.backup
+*.tmp
+.TemporaryItems
+*.backup/
+.Spotlight-V100
+.ruff_cache/
+# Private keys (specific patterns to avoid false positives)
+# Build Tools & Frameworks
