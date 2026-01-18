@@ -23,7 +23,7 @@ try:
     from src.generators.image_gen import get_image_generator
 except ImportError:
     # If run as script from src/ dir
-    from generators.image_gen import get_image_generator
+    from generators.image_gen import get_image_generator  # type: ignore[no-redef]
 
 # Load environment variables
 load_dotenv()
@@ -70,6 +70,112 @@ def generate_image(prompt: str, style_name: Optional[str] = None) -> str:
     result = image_gen.generate(prompt, style_name)
     if result["success"]:
         return f"Image generation request successful.\nPrompt used: {result['prompt']}\nStatus: {result['status']}\nLocal Path: {result.get('local_path')}"
+    else:
+        return f"Error: {result['error']}"
+
+
+@mcp.tool()
+def generate_image_advanced(
+    prompt: str,
+    style_name: Optional[str] = None,
+    aspect_ratio: str = "16:9",
+    format: str = "png",
+    quality: int = 95,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
+    negative_prompt: Optional[str] = None,
+    style_intensity: str = "normal",
+    enhance_prompt: bool = True,
+) -> str:
+    """
+    Advanced image generation with fine-grained control (SPEC-IMG-004).
+
+    Features:
+    - Resolution Control: Custom width/height (256-2048 range)
+    - Negative Prompts: Exclude unwanted elements
+    - Style Intensity: weak/normal/strong keyword count
+    - Prompt Enhancement: Auto style keyword addition
+
+    Args:
+        prompt: Visual description of the image
+        style_name: Optional style name from list_styles()
+        aspect_ratio: Image aspect ratio (default: "16:9")
+        format: Output format - png, jpeg, webp (default: "png")
+        quality: Image quality 1-100 for JPEG/WebP (default: 95)
+        width: Custom width in pixels 256-2048 (optional)
+        height: Custom height in pixels 256-2048 (optional)
+        negative_prompt: Elements to exclude from generation (optional)
+        style_intensity: Style strength - weak/normal/strong (default: "normal")
+        enhance_prompt: Enable automatic style keyword addition (default: True)
+
+    Style Intensity Guide:
+    - weak: 1-2 style keywords added
+    - normal: 2-4 style keywords added
+    - strong: 4-6 style keywords added
+
+    Examples:
+    - High resolution portrait: width=1024, height=1536, aspect_ratio="2:3"
+    - Exclude elements: negative_prompt="blurry, low quality, distorted"
+    - Subtle styling: style_intensity="weak", enhance_prompt=True
+    """
+    # 파라미터 검증
+    valid_formats = ["png", "jpeg", "webp", "jpg"]
+    if format not in valid_formats:
+        return f"Error: Invalid format '{format}'. Must be one of: {', '.join(valid_formats)}"
+
+    if not 1 <= quality <= 100:
+        return f"Error: Quality must be between 1 and 100, got {quality}"
+
+    valid_intensities = ["weak", "normal", "strong"]
+    if style_intensity not in valid_intensities:
+        return f"Error: Invalid style_intensity '{style_intensity}'. Must be one of: {', '.join(valid_intensities)}"
+
+    # 해상도 검증
+    if width and height:
+        from models.prompt_enhancer import validate_resolution
+
+        adj_width, adj_height, was_adjusted = validate_resolution(width, height)
+        if was_adjusted:
+            return f"Warning: Resolution adjusted from {width}x{height} to {adj_width}x{adj_height} (must be 256-2048). Please retry with valid dimensions."
+    elif width or height:
+        # 둘 중 하나만 제공된 경우
+        return "Error: Both width and height must be provided together for custom resolution."
+
+    result = image_gen.generate_advanced(
+        prompt=prompt,
+        style_name=style_name,
+        aspect_ratio=aspect_ratio,
+        format=format,
+        quality=quality,
+        width=width,
+        height=height,
+        negative_prompt=negative_prompt,
+        style_intensity=style_intensity,
+        enhance_prompt=enhance_prompt,
+    )
+
+    if result["success"]:
+        response_parts = [
+            "Advanced image generation successful.",
+            f"Prompt: {result['prompt']}",
+        ]
+
+        # 선택적 정보 추가
+        if "width" in result and "height" in result:
+            response_parts.append(f"Resolution: {result['width']}x{result['height']}")
+
+        if result.get("negative_prompt"):
+            response_parts.append(
+                f"Negative Prompt: {result['negative_prompt'][:50]}..."
+            )
+
+        if result.get("cached"):
+            response_parts.append("(Cached result)")
+
+        response_parts.append(f"Status: {result['status']}")
+        response_parts.append(f"Local Path: {result.get('local_path')}")
+
+        return "\n".join(response_parts)
     else:
         return f"Error: {result['error']}"
 

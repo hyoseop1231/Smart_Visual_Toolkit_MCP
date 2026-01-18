@@ -12,6 +12,9 @@ import os
 import sys
 from pathlib import Path
 from unittest.mock import patch, MagicMock
+from io import BytesIO
+from PIL import Image
+import numpy as np
 
 # src 디렉토리를 Python 경로에 추가
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -25,6 +28,19 @@ sys.modules["google.genai.types"] = mock_types_module
 
 # 이제 image_gen 임포트 가능
 from generators.image_gen import ImageGenerator  # noqa: E402
+
+
+def create_mock_png_bytes() -> bytes:
+    """유효한 PNG 이미지 바이트 생성"""
+    # 100x100 빨간색 이미지 생성
+    arr = np.zeros((100, 100, 3), dtype=np.uint8)
+    arr[:, :] = [255, 0, 0]  # 빨간색
+    img = Image.fromarray(arr, mode="RGB")
+
+    # BytesIO에 PNG로 저장
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    return buffer.getvalue()
 
 
 class TestImageGeneratorCacheIntegration:
@@ -72,7 +88,7 @@ class TestImageGeneratorCacheIntegration:
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_image = MagicMock()
-        mock_image.image.image_bytes = b"fake_image_data"
+        mock_image.image.image_bytes = create_mock_png_bytes()
         mock_response.generated_images = [mock_image]
         mock_client.models.generate_images.return_value = mock_response
 
@@ -121,7 +137,7 @@ class TestImageGeneratorCacheIntegration:
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_image = MagicMock()
-        mock_image.image.image_bytes = b"fake_image_data"
+        mock_image.image.image_bytes = create_mock_png_bytes()
         mock_response.generated_images = [mock_image]
         mock_client.models.generate_images.return_value = mock_response
 
@@ -161,7 +177,7 @@ class TestImageGeneratorCacheIntegration:
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_image = MagicMock()
-        mock_image.image.image_bytes = b"fake_image_data"
+        mock_image.image.image_bytes = create_mock_png_bytes()
         mock_response.generated_images = [mock_image]
         mock_client.models.generate_images.return_value = mock_response
 
@@ -192,7 +208,7 @@ class TestImageGeneratorCacheIntegration:
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_image = MagicMock()
-        mock_image.image.image_bytes = b"fake_image_data"
+        mock_image.image.image_bytes = create_mock_png_bytes()
         mock_response.generated_images = [mock_image]
         mock_client.models.generate_images.return_value = mock_response
 

@@ -19,19 +19,27 @@ from dataclasses import dataclass
 from typing import Dict, Any, Optional
 
 
-def generate_cache_key(prompt: str, style: str, aspect_ratio: str = "16:9") -> str:
+def generate_cache_key(
+    prompt: str,
+    style: str,
+    aspect_ratio: str = "16:9",
+    format: str = "png",
+    quality: int = 95,
+) -> str:
     """
     캐시 키 생성 - SHA-256 해시 사용
 
     입력값을 정규화하여 일관된 해시 키를 생성합니다.
     - 앞뒤 공백 제거
-    - 소문자 변환 (prompt, style)
+    - 소문자 변환 (prompt, style, format)
     - 파이프(|) 구분자로 연결
 
     Args:
         prompt: 이미지 생성 프롬프트
         style: 스타일 이름
         aspect_ratio: 화면 비율 (기본값: "16:9")
+        format: 이미지 형식 (기본값: "png")
+        quality: 이미지 품질 (기본값: 95)
 
     Returns:
         64자 16진수 해시 문자열
@@ -39,8 +47,62 @@ def generate_cache_key(prompt: str, style: str, aspect_ratio: str = "16:9") -> s
     normalized_prompt = prompt.strip().lower()
     normalized_style = style.strip().lower()
     normalized_ratio = aspect_ratio.strip()
+    normalized_format = format.strip().lower()
 
-    key_source = f"{normalized_prompt}|{normalized_style}|{normalized_ratio}"
+    key_source = (
+        f"{normalized_prompt}|{normalized_style}|{normalized_ratio}|"
+        f"{normalized_format}|{quality}"
+    )
+    return hashlib.sha256(key_source.encode("utf-8")).hexdigest()
+
+
+def generate_cache_key_advanced(
+    prompt: str,
+    style: str,
+    aspect_ratio: str = "16:9",
+    format: str = "png",
+    quality: int = 95,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
+    negative_prompt: Optional[str] = None,
+    style_intensity: str = "normal",
+    enhance_prompt: bool = True,
+) -> str:
+    """
+    고급 기능용 캐시 키 생성
+
+    generate_cache_key()를 확장하여 추가 파라미터들을 포함합니다.
+
+    Args:
+        prompt: 이미지 생성 프롬프트
+        style: 스타일 이름
+        aspect_ratio: 화면 비율 (기본값: "16:9")
+        format: 이미지 형식 (기본값: "png")
+        quality: 이미지 품질 (기본값: 95)
+        width: 사용자 정의 너비 (선택)
+        height: 사용자 정의 높이 (선택)
+        negative_prompt: 네거티브 프롬프트 (선택)
+        style_intensity: 스타일 강도 (기본값: "normal")
+        enhance_prompt: 프롬프트 강화 활성화 (기본값: True)
+
+    Returns:
+        64자 16진수 해시 문자열
+    """
+    normalized_prompt = prompt.strip().lower()
+    normalized_style = style.strip().lower()
+    normalized_ratio = aspect_ratio.strip()
+    normalized_format = format.strip().lower()
+
+    # 선택적 파라미터 정규화
+    width_str = str(width) if width else "none"
+    height_str = str(height) if height else "none"
+    normalized_negative = negative_prompt.strip().lower() if negative_prompt else "none"
+
+    key_source = (
+        f"{normalized_prompt}|{normalized_style}|{normalized_ratio}|"
+        f"{normalized_format}|{quality}|{width_str}x{height_str}|"
+        f"{normalized_negative}|{style_intensity}|{enhance_prompt}"
+    )
     return hashlib.sha256(key_source.encode("utf-8")).hexdigest()
 
 
