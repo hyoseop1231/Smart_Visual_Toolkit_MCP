@@ -24,8 +24,7 @@ sys.modules["google.genai"] = mock_genai_module
 sys.modules["google.genai.types"] = mock_types_module
 
 # 이제 image_gen 임포트 가능
-from generators import image_gen
-from generators.image_gen import ImageGenerator
+from generators.image_gen import ImageGenerator  # noqa: E402
 
 
 class TestImageGeneratorCacheIntegration:

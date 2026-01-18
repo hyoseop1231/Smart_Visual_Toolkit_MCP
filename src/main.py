@@ -9,6 +9,9 @@ from dotenv import load_dotenv
 import logging
 import sys
 
+# Skywork client import (refactored module with URL validation, retry logic, exception handling)
+from skywork.client import call_skywork_tool as _call_skywork_tool_impl
+
 # Configure logging to stderr to avoid interfering with MCP stdout
 logging.basicConfig(
     level=logging.INFO,
@@ -133,9 +136,8 @@ Once configured, you will have access to:
 
 # Validates environment and args
 # --- Skywork Proxy Logic ---
-# 리팩토링된 Skywork 클라이언트 모듈 사용
+# 리팩토링된 Skywork 클라이언트 모듈 사용 (imported at top)
 # 개선 사항: URL 검증, 재시도 로직, 적절한 예외 처리, 리소스 정리
-from skywork.client import call_skywork_tool as _call_skywork_tool_impl
 
 
 async def _call_skywork_tool(

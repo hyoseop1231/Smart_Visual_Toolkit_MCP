@@ -323,7 +323,7 @@ class SkyworkClient:
 
             if not isinstance(content, list):
                 logger.warning(f"Unexpected content type: {type(content)}")
-                return f"Error: Unexpected response format"
+                return "Error: Unexpected response format"
 
             for item in content:
                 if isinstance(item, dict) and item.get("type") == "text":
