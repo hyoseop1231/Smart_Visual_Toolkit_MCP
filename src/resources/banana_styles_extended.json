@@ -1,0 +1,242 @@
+{
+  "styles": [
+    {
+      "name": "Corporate Memphis",
+      "keywords": "Corporate Memphis, 3D Render, Confetti",
+      "description": "Modern tech company style, clean and friendly",
+      "category": "business"
+    },
+    {
+      "name": "Flat Corporate",
+      "keywords": "Flat illustration, Corporate, Memphis",
+      "description": "Professional, flat design suitable for business presentations",
+      "category": "business"
+    },
+    {
+      "name": "Isometric Infographic",
+      "keywords": "Infographic, Isometric, Colorful",
+      "description": "3D-like technical illustrations, good for data visualization",
+      "category": "data"
+    },
+    {
+      "name": "Minimal Line Art",
+      "keywords": "Minimal, Monochrome, Line Art",
+      "description": "Simple, elegant black and white drawings",
+      "category": "minimal"
+    },
+    {
+      "name": "Doodle Notebook",
+      "keywords": "Doodle, Notebook, Blue Ink",
+      "description": "Hand-drawn style, casual and creative",
+      "category": "casual"
+    },
+    {
+      "name": "Clay 3D",
+      "keywords": "Clay, Stopmotion, Cute",
+      "description": "Playful 3D clay modeling style",
+      "category": "fun"
+    },
+    {
+      "name": "Watercolor Map",
+      "keywords": "Watercolor, Map, Fantasy",
+      "description": "Artistic watercolor painting style",
+      "category": "artistic"
+    },
+    {
+      "name": "Pixel Art",
+      "keywords": "Pixel Art, Retro Game, 8-bit",
+      "description": "Retro gaming aesthetic",
+      "category": "retro"
+    },
+    {
+      "name": "Glassmorphism",
+      "keywords": "Glassmorphism, Dark, Blur, Translucent",
+      "description": "Modern UI trend, translucent and sleek",
+      "category": "modern"
+    },
+    {
+      "name": "Cyberpunk",
+      "keywords": "Cyberpunk, Blue, Circuit, Neon",
+      "description": "Futuristic, high-tech, neon aesthetic",
+      "category": "tech"
+    },
+    {
+      "name": "Synthwave",
+      "keywords": "Synthwave, Sunset, Retro Grid, 80s",
+      "description": "80s retro-futuristic style",
+      "category": "retro"
+    },
+    {
+      "name": "Paper Cutout",
+      "keywords": "Paper Cutout, Layered, Shadow",
+      "description": "Crafty feel with depth and layers",
+      "category": "artistic"
+    },
+    {
+      "name": "Ukiyo-e Pop",
+      "keywords": "Ukiyo-e, City Pop, Halftone, Japanese",
+      "description": "Japanese retro pop art style",
+      "category": "cultural"
+    },
+    {
+      "name": "Low Poly",
+      "keywords": "Low Poly, 3D, Geometric, Abstract",
+      "description": "Abstract 3D geometric shapes",
+      "category": "abstract"
+    },
+    {
+      "name": "Abstract Fluid",
+      "keywords": "Abstract, Fluid, Gradient, Colorful",
+      "description": "Colorful flowing liquids and gradients",
+      "category": "abstract"
+    },
+    {
+      "name": "Neon Glow",
+      "keywords": "Neon, Glow, Dark Background, Vibrant",
+      "description": "Bright neon signs on dark backgrounds",
+      "category": "tech"
+    },
+    {
+      "name": "Pastel Dreams",
+      "keywords": "Pastel, Soft, Dreamy, Light",
+      "description": "Soft pastel colors, gentle and calming",
+      "category": "soft"
+    },
+    {
+      "name": "Collage Art",
+      "keywords": "Collage, Mixed Media, Cut Paper, Vintage",
+      "description": "Mixed media collage with vintage elements",
+      "category": "artistic"
+    },
+    {
+      "name": "Botanical",
+      "keywords": "Botanical, Plants, Nature, Green, Leaves",
+      "description": "Nature-inspired with plants and greenery",
+      "category": "nature"
+    },
+    {
+      "name": "Risograph",
+      "keywords": "Risograph, Print, Grain, CMYK, Offset",
+      "description": "Retro print aesthetic with grain texture",
+      "category": "retro"
+    },
+    {
+      "name": "Y2K Aesthetic",
+      "keywords": "Y2K, 2000s, Metallic, Futuristic, Chrome",
+      "description": "Early 2000s futuristic style",
+      "category": "retro"
+    },
+    {
+      "name": "Chrome Metal",
+      "keywords": "Chrome, Metallic, Reflective, Silver, Liquid Metal",
+      "description": "Shiny metallic chrome surfaces",
+      "category": "modern"
+    },
+    {
+      "name": "Gothic Dark",
+      "keywords": "Gothic, Dark, Medieval, Ornate, Victorian",
+      "description": "Dark gothic aesthetic with ornate details",
+      "category": "artistic"
+    },
+    {
+      "name": "Vaporwave",
+      "keywords": "Vaporwave, Pink, Purple, Statue, Grid, Retro",
+      "description": "90s internet aesthetic with pink/purple tones",
+      "category": "retro"
+    },
+    {
+      "name": "Blueprint Technical",
+      "keywords": "Blueprint, Technical, Engineering, Schematic, Grid",
+      "description": "Technical drawing style on blue grid",
+      "category": "data"
+    },
+    {
+      "name": "Vintage Poster",
+      "keywords": "Vintage, Poster, Retro, Typography, Aged",
+      "description": "Classic vintage advertising poster style",
+      "category": "retro"
+    },
+    {
+      "name": "Space Cosmic",
+      "keywords": "Space, Galaxy, Stars, Cosmic, Nebula",
+      "description": "Deep space with stars and nebulae",
+      "category": "nature"
+    },
+    {
+      "name": "Geometric Pattern",
+      "keywords": "Geometric, Pattern, Shapes, Tessellation, Bold",
+      "description": "Bold geometric patterns and shapes",
+      "category": "abstract"
+    },
+    {
+      "name": "Glitch Digital",
+      "keywords": "Glitch, Digital, Distortion, RGB, Error",
+      "description": "Digital glitch art with distortion effects",
+      "category": "tech"
+    },
+    {
+      "name": "Light Airy",
+      "keywords": "Light, Airy, White, Clean, Bright, Minimal",
+      "description": "Bright and clean with lots of white space",
+      "category": "minimal"
+    },
+    {
+      "name": "Industrial",
+      "keywords": "Industrial, Metal, Factory, Gritty, Urban",
+      "description": "Raw industrial aesthetic",
+      "category": "urban"
+    },
+    {
+      "name": "Kawaii Cute",
+      "keywords": "Kawaii, Cute, Japanese, Pastel, Characters",
+      "description": "Japanese cute style with adorable characters",
+      "category": "fun"
+    },
+    {
+      "name": "Noir Cinematic",
+      "keywords": "Noir, Cinematic, Black White, Shadows, Film",
+      "description": "Classic film noir dramatic lighting",
+      "category": "artistic"
+    },
+    {
+      "name": "Tropical",
+      "keywords": "Tropical, Palm, Beach, Colorful, Summer",
+      "description": "Vibrant tropical and beach vibes",
+      "category": "nature"
+    },
+    {
+      "name": "Bauhaus",
+      "keywords": "Bauhaus, Modernist, Primary Colors, Geometric, Bold",
+      "description": "Classic Bauhaus design principles",
+      "category": "artistic"
+    }
+  ],
+  "default_style": "Flat Corporate",
+  "categories": {
+    "business": ["Corporate Memphis", "Flat Corporate"],
+    "data": ["Isometric Infographic", "Blueprint Technical"],
+    "minimal": ["Minimal Line Art", "Light Airy"],
+    "casual": ["Doodle Notebook"],
+    "fun": ["Clay 3D", "Kawaii Cute"],
+    "artistic": ["Watercolor Map", "Paper Cutout", "Collage Art", "Gothic Dark", "Noir Cinematic", "Bauhaus"],
+    "retro": ["Pixel Art", "Synthwave", "Risograph", "Y2K Aesthetic", "Vaporwave", "Vintage Poster"],
+    "modern": ["Glassmorphism", "Chrome Metal"],
+    "tech": ["Cyberpunk", "Neon Glow", "Glitch Digital"],
+    "cultural": ["Ukiyo-e Pop"],
+    "abstract": ["Low Poly", "Abstract Fluid", "Geometric Pattern"],
+    "soft": ["Pastel Dreams"],
+    "nature": ["Botanical", "Space Cosmic", "Tropical"],
+    "urban": ["Industrial"]
+  },
+  "recommendations": {
+    "business_presentation": ["Flat Corporate", "Corporate Memphis", "Isometric Infographic"],
+    "tech_startup": ["Cyberpunk", "Glassmorphism", "Neon Glow"],
+    "education": ["Doodle Notebook", "Clay 3D", "Kawaii Cute"],
+    "marketing": ["Y2K Aesthetic", "Abstract Fluid", "Collage Art"],
+    "data_visualization": ["Isometric Infographic", "Blueprint Technical", "Minimal Line Art"],
+    "creative": ["Watercolor Map", "Collage Art", "Paper Cutout"],
+    "gaming": ["Pixel Art", "Synthwave", "Glitch Digital"],
+    "nature_environment": ["Botanical", "Tropical", "Watercolor Map"],
+    "luxury_premium": ["Chrome Metal", "Noir Cinematic", "Gothic Dark"]
+  }
+}

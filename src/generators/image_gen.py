@@ -20,7 +20,7 @@ load_dotenv()
 
 
 class ImageGenerator:
-    def __init__(self, styles_data: Dict[str, Any]):
+    def __init__(self, styles_data: Dict[str, Any], output_dir: Optional[Path] = None):
         self.styles = {s["name"]: s for s in styles_data.get("styles", [])}
         self.default_style = styles_data.get("default_style", "Flat Corporate")
 
@@ -36,7 +36,12 @@ class ImageGenerator:
             logging.warning("GOOGLE_API_KEY is not set. Image generation will fail.")
 
         # Ensure output directory exists
-        self.output_dir = Path("output/images")
+        if output_dir is None:
+            # Fallback to project root / output / images
+            project_root = Path(__file__).parent.parent.parent
+            self.output_dir = project_root / "output" / "images"
+        else:
+            self.output_dir = output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # 캐시 설정 (환경 변수 기반)
@@ -501,8 +506,8 @@ class ImageGenerator:
             return {"success": False, "error": str(e)}
 
 
-def get_image_generator():
+def get_image_generator(output_dir: Optional[Path] = None):
     styles_path = Path(__file__).parent.parent / "resources" / "banana_styles.json"
     with open(styles_path, "r", encoding="utf-8") as f:
         data = json.load(f)
-    return ImageGenerator(data)
+    return ImageGenerator(data, output_dir=output_dir)

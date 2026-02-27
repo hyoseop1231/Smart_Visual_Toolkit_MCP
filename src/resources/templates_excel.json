@@ -1,0 +1,42 @@
+{
+  "templates": [
+    {
+      "template_id": "skywork_excel_spreadsheet",
+      "name": "Data Spreadsheet",
+      "content_type": "excel",
+      "keywords": "Spreadsheet, Data, Analysis, Organized",
+      "description": "Organized data spreadsheet for analysis",
+      "style_name": null,
+      "tags": ["data", "spreadsheet", "analysis", "organized"],
+      "aspect_ratios": [],
+      "formats": ["xlsx", "csv", "pdf"],
+      "version": "1.0.0",
+      "metadata": {
+        "skywork_tool": "gen_excel",
+        "default_params": {
+          "use_network": "true"
+        }
+      }
+    },
+    {
+      "template_id": "skywork_excel_financial",
+      "name": "Financial Report",
+      "content_type": "excel",
+      "keywords": "Financial, Report, Calculation, Professional",
+      "description": "Professional financial report with calculations",
+      "style_name": null,
+      "tags": ["financial", "report", "calculation", "professional"],
+      "aspect_ratios": [],
+      "formats": ["xlsx", "csv", "pdf"],
+      "version": "1.0.0",
+      "metadata": {
+        "skywork_tool": "gen_excel",
+        "default_params": {
+          "use_network": "true"
+        }
+      }
+    }
+  ],
+  "last_updated": "TemplateMetadata",
+  "total_count": 2
+}

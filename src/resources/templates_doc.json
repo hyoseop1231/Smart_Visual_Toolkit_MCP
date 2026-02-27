@@ -1,0 +1,60 @@
+{
+  "templates": [
+    {
+      "template_id": "skywork_doc_professional",
+      "name": "Professional Document",
+      "content_type": "doc",
+      "keywords": "Professional, Business, Clean, Structured",
+      "description": "Professional business document with clean layout",
+      "style_name": null,
+      "tags": ["business", "professional", "clean", "corporate"],
+      "aspect_ratios": [],
+      "formats": ["pdf", "docx"],
+      "version": "1.0.0",
+      "metadata": {
+        "skywork_tool": "gen_doc",
+        "default_params": {
+          "use_network": "true"
+        }
+      }
+    },
+    {
+      "template_id": "skywork_doc_technical",
+      "name": "Technical Documentation",
+      "content_type": "doc",
+      "keywords": "Technical, Documentation, Structured, Detailed",
+      "description": "Technical documentation with structured sections",
+      "style_name": null,
+      "tags": ["technical", "documentation", "detailed", "structured"],
+      "aspect_ratios": [],
+      "formats": ["pdf", "docx"],
+      "version": "1.0.0",
+      "metadata": {
+        "skywork_tool": "gen_doc",
+        "default_params": {
+          "use_network": "true"
+        }
+      }
+    },
+    {
+      "template_id": "skywork_doc_report",
+      "name": "Business Report",
+      "content_type": "doc",
+      "keywords": "Report, Business, Analysis, Data-driven",
+      "description": "Data-driven business report format",
+      "style_name": null,
+      "tags": ["report", "business", "analysis", "data"],
+      "aspect_ratios": [],
+      "formats": ["pdf", "docx"],
+      "version": "1.0.0",
+      "metadata": {
+        "skywork_tool": "gen_doc",
+        "default_params": {
+          "use_network": "true"
+        }
+      }
+    }
+  ],
+  "last_updated": "TemplateMetadata",
+  "total_count": 3
+}

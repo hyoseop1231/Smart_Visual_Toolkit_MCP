@@ -12,11 +12,14 @@ import sys
 # Skywork client import (refactored module with URL validation, retry logic, exception handling)
 from skywork.client import call_skywork_tool as _call_skywork_tool_impl
 
-# Configure logging to stderr to avoid interfering with MCP stdout
+# Configure logging to file to avoid interfering with MCP communication
+# Get project root directory (will be set properly later)
+LOG_FILE = Path(__file__).parent.parent / "mcp_server.log"
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.WARNING,  # Reduce log verbosity to avoid delays
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    stream=sys.stderr,
+    filename=str(LOG_FILE),
+    filemode='a'
 )
 
 try:
@@ -30,25 +33,69 @@ try:
 except ImportError:
     from gallery.image_gallery import ImageGallery  # type: ignore[no-redef]
 
+try:
+    from src.templates.registry import get_registry
+    from src.templates.models import ContentType
+except ImportError:
+    from templates.registry import get_registry  # type: ignore[no-redef]
+    from templates.models import ContentType  # type: ignore[no-redef]
+
 # Load environment variables
-load_dotenv()
+# Get project root directory (parent of src/)
+PROJECT_ROOT = Path(__file__).parent.parent
+load_dotenv(PROJECT_ROOT / ".env")
 
 # Initialize FastMCP server
 mcp = FastMCP("Smart Visual Toolkit")
 
-# Initialize Generators
-image_gen = get_image_generator()
+# Setup paths
+output_dir = PROJECT_ROOT / "output" / "images"
+metadata_path = PROJECT_ROOT / "output" / "metadata.json"
+template_dir = Path(__file__).parent / "resources"
 
-# Initialize Gallery (SPEC-GALLERY-001)
-output_dir = Path("output/images")
-metadata_path = Path("output/metadata.json")
-gallery = ImageGallery(
-    images_dir=output_dir,
-    metadata_path=metadata_path,
-    enable_thumbnails=os.getenv("ENABLE_THUMBNAILS", "false").lower() == "true",
-)
+# Lazy initialization - components will be initialized on first use
+_image_gen = None
+_gallery = None
+_template_registry = None
 
-# Load styles for internal use
+def get_or_create_image_gen():
+    global _image_gen
+    if _image_gen is None:
+        _image_gen = get_image_generator(output_dir=output_dir)
+    return _image_gen
+
+def get_or_create_gallery():
+    global _gallery
+    if _gallery is None:
+        _gallery = ImageGallery(
+            images_dir=output_dir,
+            metadata_path=metadata_path,
+            enable_thumbnails=os.getenv("ENABLE_THUMBNAILS", "false").lower() == "true",
+        )
+    return _gallery
+
+def get_or_create_registry():
+    global _template_registry
+    if _template_registry is None:
+        _template_registry = get_registry(data_path=template_dir / "templates_image.json")
+        # Load additional template types
+        for template_file in ["templates_doc.json", "templates_ppt.json", "templates_excel.json"]:
+            template_path = template_dir / template_file
+            if template_path.exists():
+                try:
+                    with open(template_path, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        for tmpl_data in data.get("templates", []):
+                            from src.templates.models import TemplateMetadata
+                            metadata = TemplateMetadata.from_dict(tmpl_data)
+                            _template_registry.register_template(metadata, validate=False)
+                except Exception as e:
+                    logging.warning(f"Failed to load templates from {template_file}: {e}")
+        # Set default template
+        _template_registry.set_default_template("flat_corporate")
+    return _template_registry
+
+# Load styles for internal use (legacy compatibility)
 STYLES_PATH = Path(__file__).parent / "resources" / "banana_styles.json"
 try:
     with open(STYLES_PATH, "r", encoding="utf-8") as f:
@@ -74,23 +121,224 @@ def list_styles() -> str:
     return "\n".join(result)
 
 
+# --- Template Management Tools (SPEC-TEMPLATE-001) ---
+
+
 @mcp.tool()
-def generate_image(prompt: str, style_name: Optional[str] = None) -> str:
+def list_templates(
+    content_type: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+) -> str:
     """
-    Generates an image using Nano Banana Pro style patterns.
-    - prompt: Visual description of the image.
-    - style_name: Optional style name from list_styles().
+    [SPEC-TEMPLATE-001] Lists available templates with filtering.
+
+    Args:
+        content_type: Filter by content type - image, doc, ppt, excel (optional)
+        limit: Maximum number of templates to return (default: 50)
+        offset: Number of templates to skip for pagination (default: 0)
+
+    Returns:
+        Formatted list of templates with metadata
     """
-    result = image_gen.generate(prompt, style_name)
-    if result["success"]:
-        return f"Image generation request successful.\nPrompt used: {result['prompt']}\nStatus: {result['status']}\nLocal Path: {result.get('local_path')}"
-    else:
-        return f"Error: {result['error']}"
+    # Parse content type
+    ct = None
+    if content_type:
+        try:
+            ct = ContentType.from_string(content_type)
+        except ValueError as e:
+            return f"Error: {e}"
+
+    templates = template_registry.list_templates(
+        content_type=ct, limit=limit, offset=offset, sort_by="name", sort_order="asc"
+    )
+
+    if not templates:
+        return "No templates found."
+
+    result = [f"Found {len(templates)} template(s):", ""]
+
+    for tmpl in templates:
+        result.append(f"ID: {tmpl.template_id}")
+        result.append(f"  Name: {tmpl.name}")
+        result.append(f"  Type: {tmpl.content_type.value}")
+        result.append(f"  Description: {tmpl.description}")
+
+        if tmpl.is_image_template():
+            result.append(f"  Aspect Ratios: {', '.join(tmpl.aspect_ratios)}")
+
+        result.append(f"  Formats: {', '.join(tmpl.formats)}")
+        result.append(f"  Tags: {', '.join(tmpl.tags) if tmpl.tags else 'None'}")
+        result.append("")
+
+    return "\n".join(result)
+
+
+@mcp.tool()
+def get_template_details(template_id: str) -> str:
+    """
+    [SPEC-TEMPLATE-001] Gets detailed metadata for a specific template.
+
+    Args:
+        template_id: Unique template identifier
+
+    Returns:
+        Detailed template metadata or error message
+    """
+    template = template_registry.get_template(template_id)
+
+    if not template:
+        return f"Error: Template '{template_id}' not found."
+
+    result = [
+        f"Template Details: {template.template_id}",
+        f"  Name: {template.name}",
+        f"  Type: {template.content_type.value}",
+        f"  Description: {template.description}",
+        f"  Keywords: {template.keywords}",
+        f"  Version: {template.version}",
+        f"  Created: {template.created_at}",
+        f"  Updated: {template.updated_at}",
+    ]
+
+    if template.style_name:
+        result.append(f"  Legacy Style Name: {template.style_name}")
+
+    if template.is_image_template():
+        result.append(f"  Aspect Ratios: {', '.join(template.aspect_ratios)}")
+
+    result.append(f"  Formats: {', '.join(template.formats)}")
+    result.append(f"  Tags: {', '.join(template.tags) if template.tags else 'None'}")
+
+    if template.metadata:
+        result.append(f"  Additional Metadata: {template.metadata}")
+
+    return "\n".join(result)
+
+
+@mcp.tool()
+def search_templates(
+    keyword: Optional[str] = None,
+    tag: Optional[str] = None,
+    content_type: Optional[str] = None,
+) -> str:
+    """
+    [SPEC-TEMPLATE-001] Searches templates by keyword, tag, or type.
+
+    Args:
+        keyword: Search in name, description, keywords (optional)
+        tag: Filter by tag (optional)
+        content_type: Filter by content type - image, doc, ppt, excel (optional)
+
+    Returns:
+        Formatted list of matching templates
+    """
+    filters = {}
+    if keyword:
+        filters["keyword"] = keyword
+    if tag:
+        filters["tag"] = tag
+    if content_type:
+        try:
+            filters["content_type"] = ContentType.from_string(content_type)
+        except ValueError as e:
+            return f"Error: {e}"
+
+    templates = template_registry.search_templates(filters)
+
+    if not templates:
+        return "No matching templates found."
+
+    result = [f"Found {len(templates)} matching template(s):", ""]
+
+    for tmpl in templates:
+        result.append(f"ID: {tmpl.template_id}")
+        result.append(f"  Name: {tmpl.name}")
+        result.append(f"  Type: {tmpl.content_type.value}")
+        result.append(f"  Description: {tmpl.description[:80]}...")
+        result.append("")
+
+    return "\n".join(result)
+
+
+@mcp.tool()
+def generate_image(
+    prompt: str, template_id: Optional[str] = None, style_name: Optional[str] = None
+) -> str:
+    """
+    Generates an image using template-based or legacy style-based generation.
+
+    [SPEC-TEMPLATE-001] Template-based generation is preferred.
+    If template_id is provided, it uses the template system.
+    If only style_name is provided, it uses the legacy system (backward compatibility).
+
+    Args:
+        prompt: Visual description of the image
+        template_id: Template ID from list_templates() (preferred)
+        style_name: Legacy style name from list_styles() (for backward compatibility)
+
+    Returns:
+        Generation result with prompt, status, and local path
+    """
+    # Template-based generation (preferred)
+    if template_id:
+        template = template_registry.get_template(template_id)
+        if not template:
+            return f"Error: Template '{template_id}' not found. Use list_templates() to see available templates."
+
+        if not template.is_image_template():
+            return f"Error: Template '{template_id}' is not an image template (type: {template.content_type.value})."
+
+        # Use template's legacy style name for actual generation
+        effective_style = template.get_legacy_style_name()
+
+        result = image_gen.generate(prompt, effective_style)
+
+        if result["success"]:
+            response = [
+                f"Image generation request successful (using template: {template.name}).",
+                f"Template ID: {template_id}",
+                f"Prompt used: {result['prompt']}",
+                f"Status: {result['status']}",
+                f"Local Path: {result.get('local_path')}",
+            ]
+            return "\n".join(response)
+        else:
+            return f"Error: {result['error']}"
+
+    # Legacy style-based generation (backward compatibility)
+    if style_name:
+        result = image_gen.generate(prompt, style_name)
+        if result["success"]:
+            return f"Image generation request successful.\nPrompt used: {result['prompt']}\nStatus: {result['status']}\nLocal Path: {result.get('local_path')}"
+        else:
+            return f"Error: {result['error']}"
+
+    # No template or style provided - use default
+    default_template = template_registry.get_default_template()
+    if default_template:
+        effective_style = default_template.get_legacy_style_name()
+        result = image_gen.generate(prompt, effective_style)
+
+        if result["success"]:
+            response = [
+                f"Image generation request successful (using default template: {default_template.name}).",
+                f"Template ID: {default_template.template_id}",
+                f"Prompt used: {result['prompt']}",
+                f"Status: {result['status']}",
+                f"Local Path: {result.get('local_path')}",
+            ]
+            return "\n".join(response)
+        else:
+            return f"Error: {result['error']}"
+
+    return "Error: No template or style provided, and no default template available."
 
 
 @mcp.tool()
 def generate_image_advanced(
     prompt: str,
+    template_id: Optional[str] = None,
     style_name: Optional[str] = None,
     aspect_ratio: str = "16:9",
     format: str = "png",
@@ -104,6 +352,10 @@ def generate_image_advanced(
     """
     Advanced image generation with fine-grained control (SPEC-IMG-004).
 
+    [SPEC-TEMPLATE-001] Template-based generation is preferred.
+    If template_id is provided, it uses the template system.
+    If only style_name is provided, it uses the legacy system (backward compatibility).
+
     Features:
     - Resolution Control: Custom width/height (256-2048 range)
     - Negative Prompts: Exclude unwanted elements
@@ -112,7 +364,8 @@ def generate_image_advanced(
 
     Args:
         prompt: Visual description of the image
-        style_name: Optional style name from list_styles()
+        template_id: Template ID from list_templates() (preferred)
+        style_name: Legacy style name from list_styles() (for backward compatibility)
         aspect_ratio: Image aspect ratio (default: "16:9")
         format: Output format - png, jpeg, webp (default: "png")
         quality: Image quality 1-100 for JPEG/WebP (default: 95)
@@ -155,43 +408,145 @@ def generate_image_advanced(
         # 둘 중 하나만 제공된 경우
         return "Error: Both width and height must be provided together for custom resolution."
 
-    result = image_gen.generate_advanced(
-        prompt=prompt,
-        style_name=style_name,
-        aspect_ratio=aspect_ratio,
-        format=format,
-        quality=quality,
-        width=width,
-        height=height,
-        negative_prompt=negative_prompt,
-        style_intensity=style_intensity,
-        enhance_prompt=enhance_prompt,
-    )
+    # Template-based generation (preferred)
+    if template_id:
+        template = template_registry.get_template(template_id)
+        if not template:
+            return f"Error: Template '{template_id}' not found. Use list_templates() to see available templates."
 
-    if result["success"]:
-        response_parts = [
-            "Advanced image generation successful.",
-            f"Prompt: {result['prompt']}",
-        ]
+        if not template.is_image_template():
+            return f"Error: Template '{template_id}' is not an image template (type: {template.content_type.value})."
 
-        # 선택적 정보 추가
-        if "width" in result and "height" in result:
-            response_parts.append(f"Resolution: {result['width']}x{result['height']}")
+        # Use template's legacy style name for actual generation
+        effective_style = template.get_legacy_style_name()
 
-        if result.get("negative_prompt"):
-            response_parts.append(
-                f"Negative Prompt: {result['negative_prompt'][:50]}..."
-            )
+        result = image_gen.generate_advanced(
+            prompt=prompt,
+            style_name=effective_style,
+            aspect_ratio=aspect_ratio,
+            format=format,
+            quality=quality,
+            width=width,
+            height=height,
+            negative_prompt=negative_prompt,
+            style_intensity=style_intensity,
+            enhance_prompt=enhance_prompt,
+        )
 
-        if result.get("cached"):
-            response_parts.append("(Cached result)")
+        if result["success"]:
+            response_parts = [
+                "Advanced image generation successful (using template: {}).".format(
+                    template.name
+                ),
+                f"Template ID: {template_id}",
+                f"Prompt: {result['prompt']}",
+            ]
 
-        response_parts.append(f"Status: {result['status']}")
-        response_parts.append(f"Local Path: {result.get('local_path')}")
+            # 선택적 정보 추가
+            if "width" in result and "height" in result:
+                response_parts.append(f"Resolution: {result['width']}x{result['height']}")
 
-        return "\n".join(response_parts)
-    else:
-        return f"Error: {result['error']}"
+            if result.get("negative_prompt"):
+                response_parts.append(
+                    f"Negative Prompt: {result['negative_prompt'][:50]}..."
+                )
+
+            if result.get("cached"):
+                response_parts.append("(Cached result)")
+
+            response_parts.append(f"Status: {result['status']}")
+            response_parts.append(f"Local Path: {result.get('local_path')}")
+
+            return "\n".join(response_parts)
+        else:
+            return f"Error: {result['error']}"
+
+    # Legacy style-based generation (backward compatibility)
+    if style_name:
+        result = image_gen.generate_advanced(
+            prompt=prompt,
+            style_name=style_name,
+            aspect_ratio=aspect_ratio,
+            format=format,
+            quality=quality,
+            width=width,
+            height=height,
+            negative_prompt=negative_prompt,
+            style_intensity=style_intensity,
+            enhance_prompt=enhance_prompt,
+        )
+
+        if result["success"]:
+            response_parts = [
+                "Advanced image generation successful.",
+                f"Prompt: {result['prompt']}",
+            ]
+
+            # 선택적 정보 추가
+            if "width" in result and "height" in result:
+                response_parts.append(f"Resolution: {result['width']}x{result['height']}")
+
+            if result.get("negative_prompt"):
+                response_parts.append(
+                    f"Negative Prompt: {result['negative_prompt'][:50]}..."
+                )
+
+            if result.get("cached"):
+                response_parts.append("(Cached result)")
+
+            response_parts.append(f"Status: {result['status']}")
+            response_parts.append(f"Local Path: {result.get('local_path')}")
+
+            return "\n".join(response_parts)
+        else:
+            return f"Error: {result['error']}"
+
+    # No template or style provided - use default
+    default_template = template_registry.get_default_template()
+    if default_template:
+        effective_style = default_template.get_legacy_style_name()
+        result = image_gen.generate_advanced(
+            prompt=prompt,
+            style_name=effective_style,
+            aspect_ratio=aspect_ratio,
+            format=format,
+            quality=quality,
+            width=width,
+            height=height,
+            negative_prompt=negative_prompt,
+            style_intensity=style_intensity,
+            enhance_prompt=enhance_prompt,
+        )
+
+        if result["success"]:
+            response_parts = [
+                "Advanced image generation successful (using default template: {}).".format(
+                    default_template.name
+                ),
+                f"Template ID: {default_template.template_id}",
+                f"Prompt: {result['prompt']}",
+            ]
+
+            # 선택적 정보 추가
+            if "width" in result and "height" in result:
+                response_parts.append(f"Resolution: {result['width']}x{result['height']}")
+
+            if result.get("negative_prompt"):
+                response_parts.append(
+                    f"Negative Prompt: {result['negative_prompt'][:50]}..."
+                )
+
+            if result.get("cached"):
+                response_parts.append("(Cached result)")
+
+            response_parts.append(f"Status: {result['status']}")
+            response_parts.append(f"Local Path: {result.get('local_path')}")
+
+            return "\n".join(response_parts)
+        else:
+            return f"Error: {result['error']}"
+
+    return "Error: No template or style provided, and no default template available."
 
 
 @mcp.tool()
@@ -285,41 +640,41 @@ async def _call_skywork_tool(
 
 
 @mcp.tool()
-async def gen_doc(query: str, use_network: str = "true") -> str:
+async def gen_doc(query: str, use_network: str = "false") -> str:
     """
     [Skywork Proxy] Generate a Word document.
     - query: Description of the document.
-    - use_network: "true" or "false" (string).
+    - use_network: "true" or "false" (string). Default "false" for faster generation.
     """
     return await _call_skywork_tool("gen_doc", query, use_network)
 
 
 @mcp.tool()
-async def gen_excel(query: str, use_network: str = "true") -> str:
+async def gen_excel(query: str, use_network: str = "false") -> str:
     """
     [Skywork Proxy] Generate an Excel spreadsheet.
     - query: Description of the data/table.
-    - use_network: "true" or "false" (string).
+    - use_network: "true" or "false" (string). Default "false" for faster generation.
     """
     return await _call_skywork_tool("gen_excel", query, use_network)
 
 
 @mcp.tool()
-async def gen_ppt(query: str, use_network: str = "true") -> str:
+async def gen_ppt(query: str, use_network: str = "false") -> str:
     """
     [Skywork Proxy] Generate a PowerPoint presentation.
     - query: Description of the slides.
-    - use_network: "true" or "false" (string).
+    - use_network: "true" or "false" (string). Default "false" for faster generation.
     """
     return await _call_skywork_tool("gen_ppt", query, use_network)
 
 
 @mcp.tool()
-async def gen_ppt_fast(query: str, use_network: str = "true") -> str:
+async def gen_ppt_fast(query: str, use_network: str = "false") -> str:
     """
     [Skywork Proxy] Fast PowerPoint generation.
     - query: Description of the slides.
-    - use_network: "true" or "false" (string).
+    - use_network: "true" or "false" (string). Default "false" for faster generation.
     """
     return await _call_skywork_tool("gen_ppt_fast", query, use_network)
 

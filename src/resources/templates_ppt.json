@@ -1,0 +1,60 @@
+{
+  "templates": [
+    {
+      "template_id": "skywork_ppt_professional",
+      "name": "Professional Presentation",
+      "content_type": "ppt",
+      "keywords": "Professional, Business, Clean, Modern",
+      "description": "Professional business presentation with modern design",
+      "style_name": null,
+      "tags": ["business", "professional", "modern", "corporate"],
+      "aspect_ratios": [],
+      "formats": ["pptx", "pdf"],
+      "version": "1.0.0",
+      "metadata": {
+        "skywork_tool": "gen_ppt",
+        "default_params": {
+          "use_network": "true"
+        }
+      }
+    },
+    {
+      "template_id": "skywork_ppt_educational",
+      "name": "Educational Presentation",
+      "content_type": "ppt",
+      "keywords": "Educational, Academic, Clear, Informative",
+      "description": "Clear and informative educational presentation",
+      "style_name": null,
+      "tags": ["education", "academic", "informative", "teaching"],
+      "aspect_ratios": [],
+      "formats": ["pptx", "pdf"],
+      "version": "1.0.0",
+      "metadata": {
+        "skywork_tool": "gen_ppt",
+        "default_params": {
+          "use_network": "true"
+        }
+      }
+    },
+    {
+      "template_id": "skywork_ppt_fast",
+      "name": "Quick Presentation",
+      "content_type": "ppt",
+      "keywords": "Quick, Fast, Simple, Efficient",
+      "description": "Fast generation for simple presentations",
+      "style_name": null,
+      "tags": ["fast", "quick", "simple", "efficient"],
+      "aspect_ratios": [],
+      "formats": ["pptx", "pdf"],
+      "version": "1.0.0",
+      "metadata": {
+        "skywork_tool": "gen_ppt_fast",
+        "default_params": {
+          "use_network": "true"
+        }
+      }
+    }
+  ],
+  "last_updated": "TemplateMetadata",
+  "total_count": 3
+}

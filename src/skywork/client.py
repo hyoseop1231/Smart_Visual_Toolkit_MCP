@@ -31,10 +31,10 @@ class SkyworkConfig:
     secret_id: str
     secret_key: str
     base_url: str = "https://api.skywork.ai/open/sse"
-    endpoint_timeout: float = 10.0
-    request_timeout: float = 600.0  # 10분 (gen_ppt는 5분+ 소요)
-    max_retries: int = 3
-    retry_delay: float = 1.0
+    endpoint_timeout: float = 30.0  # 증가: 10 -> 30초
+    request_timeout: float = 900.0  # 증가: 10분 -> 15분 (gen_ppt 긴 문서)
+    max_retries: int = 5  # 증가: 3 -> 5회
+    retry_delay: float = 2.0  # 증가: 1 -> 2초
 
     def generate_signature(self) -> str:
         """MD5 기반 서명 생성"""
@@ -132,7 +132,14 @@ class SkyworkClient:
 
     async def connect(self) -> None:
         """SSE 연결 수립 및 엔드포인트 발견"""
-        self._client = httpx.AsyncClient(timeout=self.config.request_timeout)
+        # 개별 타임아웃 설정 (연결/읽기/쓰기 분리)
+        timeout = httpx.Timeout(
+            connect=30.0,  # 연결 타임아웃
+            read=self.config.request_timeout,  # 읽기 타임아웃 (긴 응답 대기)
+            write=30.0,  # 쓰기 타임아웃
+            pool=30.0,  # 풀 타임아웃
+        )
+        self._client = httpx.AsyncClient(timeout=timeout)
         await self._discover_endpoint_with_retry()
 
     async def _discover_endpoint_with_retry(self) -> None:
