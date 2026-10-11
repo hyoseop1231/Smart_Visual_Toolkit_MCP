@@ -4,13 +4,13 @@ import hashlib
 from pathlib import Path
 from typing import Optional
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server import MCPServer
 from dotenv import load_dotenv
 import logging
 import sys
 
 # Skywork client import (refactored module with URL validation, retry logic, exception handling)
-from skywork.client import call_skywork_tool as _call_skywork_tool_impl
+from src.skywork.client import call_skywork_tool as _call_skywork_tool_impl
 
 # Configure logging to file to avoid interfering with MCP communication
 # Get project root directory (will be set properly later)
@@ -45,8 +45,8 @@ except ImportError:
 PROJECT_ROOT = Path(__file__).parent.parent
 load_dotenv(PROJECT_ROOT / ".env")
 
-# Initialize FastMCP server
-mcp = FastMCP("Smart Visual Toolkit")
+# Initialize the official MCP Python SDK v2 server.
+mcp = MCPServer("Smart Visual Toolkit")
 
 # Setup paths
 output_dir = PROJECT_ROOT / "output" / "images"

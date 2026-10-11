@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Minimal MCP server test"""
-from mcp.server.fastmcp import FastMCP
+from mcp.server import MCPServer
 
 # Create server
-mcp = FastMCP("Test Server")
+mcp = MCPServer("Test Server")
 
 @mcp.tool()
 def hello(name: str) -> str:
